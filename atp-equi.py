@@ -171,7 +171,7 @@ class Branches:
         # Calcula os valores em Ohm
         for n in branch.paramsOhm:
             branch.paramsOhm[n] = specialFloat(branch.params[n] *
-                dbar.get_vBase(branch.nodes[0])**2/10000)
+                dbar.get_vBase(branch.nodes[0])**2./100.E6)
 
 
     def get_equiNodes(self, inner = 0):
@@ -499,7 +499,7 @@ def makeLib(arqPaths, dlin, dbar, ignRneg, inner = 0):
                 paramsOhmSec = branch.paramsOhm.copy()
                 for key,val in branch.paramsOhm.items():
                     branch.paramsOhm[key] = 0.5*val
-                    paramsOhmSec[key] = 0.5*val*dbar.get_vBase(branch.nodes[1])**2.0/dbar.get_vBase(branch.nodes[0])**2.0                    
+                    paramsOhmSec[key] = 0.5*val*dbar.get_vBase(branch.nodes[1])**2.0/dbar.get_vBase(branch.nodes[0])**2.0
 
                 # Colocar metade do equivalente de transferência no secundário
                 arquivo.write('51{}{:6}'.format(dbar.get_nomeAtp(branch.nodes[1]) +'A',nodeToSec[0]) + 12*' ' +
