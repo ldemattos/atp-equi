@@ -29,5 +29,9 @@
 	},
 
 	# Seleciona coluna do arquivo "Nomes": Coluna 2 = EPE, Coluna 3 = ONS
-	"base":"epe"
+	"base":"epe",
+
+	# Ignora equivalentes com resistências negativas na formação dos cartões de ramos
+	# 0 para não, 1 para sim
+	"ignRneg":"1"
 }
