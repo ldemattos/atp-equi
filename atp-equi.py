@@ -171,8 +171,7 @@ class Branches:
         # Calcula os valores em Ohm
         for n in branch.paramsOhm:
             branch.paramsOhm[n] = specialFloat(branch.params[n] *
-                dbar.get_vBase(branch.nodes[0])**2./100.E6)
-
+                dbar.get_vBase(branch.nodes[0])**2./10000)
 
     def get_equiNodes(self, inner = 0):
         barrasEquiv = set()
