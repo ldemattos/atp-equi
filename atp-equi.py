@@ -498,6 +498,12 @@ def makeLib(arqPaths, dlin, dbar, ignRneg, inner = 0):
                 arquivo.write(' 1'+'{0:<6s}'.format(strNumTrf(numTrf, contTrf) + 'TIC') + '\n')
                 arquivo.write(' 2'+'{0:<6s}'.format(nodeToSec[2]) + '\n')
 
+                if numTrf > (limTrf - 1):
+                    numTrf = 0
+                    limTrf = 98
+                    contTrf += 1
+                numTrf += 1
+
             # Se for uma 'LT':
             else:
                 nodeTo = [str(dbar.get_nomeAtp(branch.nodes[1]))+'A',
