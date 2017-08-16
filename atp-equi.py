@@ -423,7 +423,7 @@ def getAtpNames(arqPaths, dbar, dlin, base):
 
     return autoEquiv, autoIntern
 
-def makeLib(arqPaths, dlin, dbar, inner = 0):
+def makeLib(arqPaths, dlin, dbar, ignRneg, inner = 0):
     """Funçaõ para compor o arquivo-cartão /BRANCH com extensão .lib, do ATP,
     que irá conter a rede equivalentada pelo Anafas."""
 
@@ -453,99 +453,95 @@ def makeLib(arqPaths, dlin, dbar, inner = 0):
 
     # Loop 'for' sobre cada circuito do conjunto DLIN
     for branch in branches:
-        # Escreve o delimitador superior, com vários '=' e, embaixo, o nome das
-        #barras DE e PARA
-        arquivo.write('C ' + 77*'=' + '\n' + 'C =====' +
-            dbar.get_nomeAna(branch.nodes[0]) + ' - ' +
-            dbar.get_nomeAna(branch.nodes[1]) + '\n')
 
-        # Compões a lista com o nome do nó DE para cada uma das 3 fases
-        nodeFrom = [str(dbar.get_nomeAtp(branch.nodes[0]))+'A',
-                    str(dbar.get_nomeAtp(branch.nodes[0]))+'B',
-                    str(dbar.get_nomeAtp(branch.nodes[0]))+'C']
+        # checar se a resistência do equivalente é negativa e se o usuário optou por ignorá-la
+        if not(ignRneg == 1 and (branch.paramsOhm['r0'] < 0. or branch.paramsOhm['r1'] < 0.)):
 
-        # A seguir, é feita a composição da lista com o nome do nó PARA, a de-
-        #pender do tipo de elemento que se deseja representar no ATP
+            # Escreve o delimitador superior, com vários '=' e, embaixo, o nome das
+            #barras DE e PARA
+            arquivo.write('C ' + 77*'=' + '\n' + 'C =====' +
+                dbar.get_nomeAna(branch.nodes[0]) + ' - ' +
+                dbar.get_nomeAna(branch.nodes[1]) + '\n')
 
+            # Compões a lista com o nome do nó DE para cada uma das 3 fases
+            nodeFrom = [str(dbar.get_nomeAtp(branch.nodes[0]))+'A',
+                        str(dbar.get_nomeAtp(branch.nodes[0]))+'B',
+                        str(dbar.get_nomeAtp(branch.nodes[0]))+'C']
 
-        # Se for um 'Gerador':
-        if branch.tipo == 'G':
-            gerName = dbar.get_nomeGerAtp(branch.nodes[0])
-            nodeTo = [str(gerName)+'A',
-                    str(gerName)+'B',
-                    str(gerName)+'C']
+            # A seguir, é feita a composição da lista com o nome do nó PARA, a de-
+            #pender do tipo de elemento que se deseja representar no ATP
 
-        # Se for um 'Shunt':
-        elif branch.nodes[1] == 0:
-            nodeTo = [' '*6 for n in range(3)]
+            # Se for um 'Gerador':
+            if branch.tipo == 'G':
+                gerName = dbar.get_nomeGerAtp(branch.nodes[0])
+                nodeTo = [str(gerName)+'A',
+                        str(gerName)+'B',
+                        str(gerName)+'C']
 
-        # Se for um 'Trafo':
-        elif branch.tipo == 'T':
-            nodeTo = [strNumTrf(numTrf, contTrf)+'TIA',
-                        strNumTrf(numTrf, contTrf)+'TIB',
-                        strNumTrf(numTrf, contTrf)+'TIC']
+            # Se for um 'Shunt':
+            elif branch.nodes[1] == 0:
+                nodeTo = [' '*6 for n in range(3)]
 
-            nodeToSec = [strNumTrf(numTrf, contTrf)+'ITA',
-                       strNumTrf(numTrf, contTrf)+'ITB',
-                       strNumTrf(numTrf, contTrf)+'ITC']
+            # Se for um 'Trafo':
+            elif branch.tipo == 'T':
+                nodeTo = [strNumTrf(numTrf, contTrf)+'TIA',
+                            strNumTrf(numTrf, contTrf)+'TIB',
+                            strNumTrf(numTrf, contTrf)+'TIC']
 
-            # Se for um transformador, é colocado um transformador ideal para fazer
-            # a relação de tensão entre as duas barras. A impedância está sendo divida
-            # entre o primário e o secundário para diminuir a probabilidade de problemas
-            # numéricos
-            paramsOhmSec = branch.paramsOhm.copy()
-            for key,val in branch.paramsOhm.items():
-                branch.paramsOhm[key] = 0.5*val
-                paramsOhmSec[key] = 0.5*val*dbar.get_vBase(branch.nodes[1])**2.0/dbar.get_vBase(branch.nodes[0])**2.0
+                nodeToSec = [strNumTrf(numTrf, contTrf)+'ITA',
+                           strNumTrf(numTrf, contTrf)+'ITB',
+                           strNumTrf(numTrf, contTrf)+'ITC']
 
-            # Colocar metade do equivalente de transferência no secundário
-            arquivo.write('51{}{:6}'.format(dbar.get_nomeAtp(branch.nodes[1]) +'A',nodeToSec[0]) + 12*' ' +
-                textos.num2string(paramsOhmSec['r0'],6) +
-                textos.num2string(paramsOhmSec['x0'],12) + '\n')
-            arquivo.write('52{}{:6}'.format(dbar.get_nomeAtp(branch.nodes[1]) +'B',nodeToSec[1]) + 12*' ' +
-                textos.num2string(paramsOhmSec['r1'],6) +
-                textos.num2string(paramsOhmSec['x1'],12) + '\n')
-            arquivo.write('53' + dbar.get_nomeAtp(branch.nodes[1]) +'C' + nodeToSec[2] + '\n')
+                # Se for um transformador, é colocado um transformador ideal para fazer
+                # a relação de tensão entre as duas barras. A impedância está sendo divida
+                # entre o primário e o secundário para diminuir a probabilidade de problemas
+                # numéricos
+                paramsOhmSec = branch.paramsOhm.copy()
+                for key,val in branch.paramsOhm.items():
+                    branch.paramsOhm[key] = 0.5*val
+                    paramsOhmSec[key] = 0.5*val*dbar.get_vBase(branch.nodes[1])**2.0/dbar.get_vBase(branch.nodes[0])**2.0                    
 
-            arquivo.write('  TRANSFORMER' + 25*' ' + 'ATI'+
-                '{0:<3s}'.format(strNumTrf(numTrf, contTrf))+'1.E6\n')
-            arquivo.write(' '*12 + '9999' + '\n')
-            arquivo.write(' 1'+'{0:<6s}'.format(strNumTrf(numTrf, contTrf)+'TIA') + ' '*18 +
-                         '.00001.00001'+str(dbar.get_vBase(branch.nodes[0])) + '\n')
-            arquivo.write(' 2'+'{0:<6s}'.format(nodeToSec[0]) + ' '*18 +
-                         '.00001.00001'+str(dbar.get_vBase(branch.nodes[1]))+ '\n')
+                # Colocar metade do equivalente de transferência no secundário
+                arquivo.write('51{}{:6}'.format(dbar.get_nomeAtp(branch.nodes[1]) +'A',nodeToSec[0]) + 12*' ' +
+                    textos.num2string(paramsOhmSec['r0'],6) +
+                    textos.num2string(paramsOhmSec['x0'],12) + '\n')
+                arquivo.write('52{}{:6}'.format(dbar.get_nomeAtp(branch.nodes[1]) +'B',nodeToSec[1]) + 12*' ' +
+                    textos.num2string(paramsOhmSec['r1'],6) +
+                    textos.num2string(paramsOhmSec['x1'],12) + '\n')
+                arquivo.write('53' + dbar.get_nomeAtp(branch.nodes[1]) +'C' + nodeToSec[2] + '\n')
 
-            arquivo.write('  TRANSFORMER ATI'+'{0:<3s}'.format(strNumTrf(numTrf, contTrf)) +
-                        ' '*18 + '{0:<6s}'.format('BTI'+strNumTrf(numTrf, contTrf))+'\n')
-            arquivo.write(' 1'+'{0:<6s}'.format(strNumTrf(numTrf, contTrf) + 'TIB') + '\n')
-            arquivo.write(' 2'+'{0:<6s}'.format(nodeToSec[1]) + '\n')
+                arquivo.write('  TRANSFORMER' + 25*' ' + 'ATI'+
+                    '{0:<3s}'.format(strNumTrf(numTrf, contTrf))+'1.E6\n')
+                arquivo.write(' '*12 + '9999' + '\n')
+                arquivo.write(' 1'+'{0:<6s}'.format(strNumTrf(numTrf, contTrf)+'TIA') + ' '*18 +
+                             '.00001.00001'+str(dbar.get_vBase(branch.nodes[0])) + '\n')
+                arquivo.write(' 2'+'{0:<6s}'.format(nodeToSec[0]) + ' '*18 +
+                             '.00001.00001'+str(dbar.get_vBase(branch.nodes[1]))+ '\n')
 
-            arquivo.write('  TRANSFORMER ATI'+'{0:<3s}'.format(strNumTrf(numTrf, contTrf)) +
-                        ' '*18 + '{0:<6s}'.format('CTI'+strNumTrf(numTrf, contTrf))+'\n')
-            arquivo.write(' 1'+'{0:<6s}'.format(strNumTrf(numTrf, contTrf) + 'TIC') + '\n')
-            arquivo.write(' 2'+'{0:<6s}'.format(nodeToSec[2]) + '\n')
+                arquivo.write('  TRANSFORMER ATI'+'{0:<3s}'.format(strNumTrf(numTrf, contTrf)) +
+                            ' '*18 + '{0:<6s}'.format('BTI'+strNumTrf(numTrf, contTrf))+'\n')
+                arquivo.write(' 1'+'{0:<6s}'.format(strNumTrf(numTrf, contTrf) + 'TIB') + '\n')
+                arquivo.write(' 2'+'{0:<6s}'.format(nodeToSec[1]) + '\n')
 
-            if numTrf > (limTrf - 1):
-                numTrf = 0
-                limTrf = 98
-                contTrf += 1
+                arquivo.write('  TRANSFORMER ATI'+'{0:<3s}'.format(strNumTrf(numTrf, contTrf)) +
+                            ' '*18 + '{0:<6s}'.format('CTI'+strNumTrf(numTrf, contTrf))+'\n')
+                arquivo.write(' 1'+'{0:<6s}'.format(strNumTrf(numTrf, contTrf) + 'TIC') + '\n')
+                arquivo.write(' 2'+'{0:<6s}'.format(nodeToSec[2]) + '\n')
 
-            numTrf += 1
+            # Se for uma 'LT':
+            else:
+                nodeTo = [str(dbar.get_nomeAtp(branch.nodes[1]))+'A',
+                        str(dbar.get_nomeAtp(branch.nodes[1]))+'B',
+                        str(dbar.get_nomeAtp(branch.nodes[1]))+'C']
 
-        # Se for uma 'LT':
-        else:
-            nodeTo = [str(dbar.get_nomeAtp(branch.nodes[1]))+'A',
-                    str(dbar.get_nomeAtp(branch.nodes[1]))+'B',
-                    str(dbar.get_nomeAtp(branch.nodes[1]))+'C']
-
-        # A seguir, é feita a escrita dos dados do circuito no arquivo-cartão.
-        arquivo.write('51{}{:6}'.format(nodeFrom[0],nodeTo[0]) + 12*' ' +
-            textos.num2string(branch.paramsOhm['r0'],6) +
-            textos.num2string(branch.paramsOhm['x0'],12) + '\n')
-        arquivo.write('52{}{:6}'.format(nodeFrom[1],nodeTo[1]) + 12*' ' +
-            textos.num2string(branch.paramsOhm['r1'],6) +
-            textos.num2string(branch.paramsOhm['x1'],12) + '\n')
-        arquivo.write('53' + nodeFrom[2] + nodeTo[2] + '\n')
+            # A seguir, é feita a escrita dos dados do circuito no arquivo-cartão.
+            arquivo.write('51{}{:6}'.format(nodeFrom[0],nodeTo[0]) + 12*' ' +
+                textos.num2string(branch.paramsOhm['r0'],6) +
+                textos.num2string(branch.paramsOhm['x0'],12) + '\n')
+            arquivo.write('52{}{:6}'.format(nodeFrom[1],nodeTo[1]) + 12*' ' +
+                textos.num2string(branch.paramsOhm['r1'],6) +
+                textos.num2string(branch.paramsOhm['x1'],12) + '\n')
+            arquivo.write('53' + nodeFrom[2] + nodeTo[2] + '\n')
 
 def makeSource(arqPaths, dbar):
     """Escreve um arquivo-cartão /SOURCE no formato .lib com as fontes do siste-
@@ -957,9 +953,9 @@ def paramsIniciais(file_json):
 
     base = params['base']
 
-    return arqPaths, base
+    ignRneg = int(params['ignRneg'])
 
-
+    return(arqPaths, base, ignRneg)
 
 def main():
 
@@ -968,7 +964,7 @@ def main():
 
     # Leitura do arquivo JSON e das opções do usuário
     # Abrir, ler, eliminar comentários e salvar as opções de entrada
-    arqPaths, base = paramsIniciais(argumnt.args.json)
+    arqPaths, base, ignRneg = paramsIniciais(argumnt.args.json)
 
     #Instancia a classe de monitoramento do status do relatório. Conforme os
     # processos vão avançando, o relatório vai sendo escrito.
@@ -1035,13 +1031,13 @@ def main():
         relaWatch.relaBuffer = ('src',)
 
     if argumnt.args.i:
-        makeLib(arqPaths, dlin, dbar, inner = 1)
+        makeLib(arqPaths, dlin, dbar, ignRneg, inner = 1)
         relaWatch.relaBuffer = ('inner', arqPaths['cwd'].resolve() / Path(str(arqPaths['Ana'].stem) + '-interna.lib'))
         if autoIntern:
             relaWatch.relaBuffer = ('miss', autoIntern, 'inner')
 
     if argumnt.args.e:
-        makeLib(arqPaths, dlin, dbar, inner = 0)
+        makeLib(arqPaths, dlin, dbar, ignRneg, inner = 0)
         relaWatch.relaBuffer = ('equi', dbar, dlin)
 
     # Verifica se há alguma valor negativo de parametro, e alerta o usuario
