@@ -481,9 +481,55 @@ def makeLib(arqPaths, dlin, dbar, inner = 0):
 
         # Se for um 'Trafo':
         elif branch.tipo == 'T':
-             nodeTo = [strNumTrf(numTrf, contTrf)+'TIA',
+            nodeTo = [strNumTrf(numTrf, contTrf)+'TIA',
                         strNumTrf(numTrf, contTrf)+'TIB',
                         strNumTrf(numTrf, contTrf)+'TIC']
+
+            nodeToSec = [strNumTrf(numTrf, contTrf)+'ITA',
+                       strNumTrf(numTrf, contTrf)+'ITB',
+                       strNumTrf(numTrf, contTrf)+'ITC']
+
+            # Se for um transformador, é colocado um transformador ideal para fazer
+            #a relação de tensão entre as duas barras. A impedância está sendo divida
+            # entre o primário e o secundário
+            paramsOhmSec = branch.paramsOhm.copy()
+            for key,val in branch.paramsOhm.items():
+                branch.paramsOhm[key] = 0.5*val
+                paramsOhmSec[key] = 0.5*val*dbar.get_vBase(branch.nodes[1])**2.0/dbar.get_vBase(branch.nodes[0])**2.0
+
+            # Colocar metade do equivalente de transferência no secundário
+            arquivo.write('51{}{:6}'.format(dbar.get_nomeAtp(branch.nodes[1]) +'A',nodeToSec[0]) + 12*' ' +
+                '{0!s:<6.6}'.format(paramsOhmSec['r0']) +
+                '{0!s:<12.12}'.format(paramsOhmSec['x0']) + '\n')
+            arquivo.write('52{}{:6}'.format(dbar.get_nomeAtp(branch.nodes[1]) +'B',nodeToSec[1]) + 12*' ' +
+                '{0!s:<6.6}'.format(paramsOhmSec['r1']) +
+                '{0!s:<12.12}'.format(paramsOhmSec['x1']) + '\n')
+            arquivo.write('53' + dbar.get_nomeAtp(branch.nodes[1]) +'C' + nodeToSec[2] + '\n')
+
+            arquivo.write('  TRANSFORMER' + 25*' ' + 'ATI'+
+                '{0:<3s}'.format(strNumTrf(numTrf, contTrf))+'1.E6\n')
+            arquivo.write(' '*12 + '9999' + '\n')
+            arquivo.write(' 1'+'{0:<6s}'.format(strNumTrf(numTrf, contTrf)+'TIA') + ' '*18 +
+                         '.00001.00001'+str(dbar.get_vBase(branch.nodes[0])) + '\n')
+            arquivo.write(' 2'+'{0:<6s}'.format(nodeToSec[0]) + ' '*18 +
+                         '.00001.00001'+str(dbar.get_vBase(branch.nodes[1]))+ '\n')
+
+            arquivo.write('  TRANSFORMER ATI'+'{0:<3s}'.format(strNumTrf(numTrf, contTrf)) +
+                        ' '*18 + '{0:<6s}'.format('BTI'+strNumTrf(numTrf, contTrf))+'\n')
+            arquivo.write(' 1'+'{0:<6s}'.format(strNumTrf(numTrf, contTrf) + 'TIB') + '\n')
+            arquivo.write(' 2'+'{0:<6s}'.format(nodeToSec[1]) + '\n')
+
+            arquivo.write('  TRANSFORMER ATI'+'{0:<3s}'.format(strNumTrf(numTrf, contTrf)) +
+                        ' '*18 + '{0:<6s}'.format('CTI'+strNumTrf(numTrf, contTrf))+'\n')
+            arquivo.write(' 1'+'{0:<6s}'.format(strNumTrf(numTrf, contTrf) + 'TIC') + '\n')
+            arquivo.write(' 2'+'{0:<6s}'.format(nodeToSec[2]) + '\n')
+
+            if numTrf > (limTrf - 1):
+                numTrf = 0
+                limTrf = 98
+                contTrf += 1
+
+            numTrf += 1
 
         # Se for uma 'LT':
         else:
@@ -492,46 +538,13 @@ def makeLib(arqPaths, dlin, dbar, inner = 0):
                     str(dbar.get_nomeAtp(branch.nodes[1]))+'C']
 
         # A seguir, é feita a escrita dos dados do circuito no arquivo-cartão.
-
         arquivo.write('51{}{:6}'.format(nodeFrom[0],nodeTo[0]) + 12*' ' +
-            '{0!s:<6.6}'.format(branch.paramsOhm['r0']) + 6*' ' +
+            '{0!s:<6.6}'.format(branch.paramsOhm['r0']) +
             '{0!s:<12.12}'.format(branch.paramsOhm['x0']) + '\n')
         arquivo.write('52{}{:6}'.format(nodeFrom[1],nodeTo[1]) + 12*' ' +
-            '{0!s:<6.6}'.format(branch.paramsOhm['r1']) + 6*' ' +
+            '{0!s:<6.6}'.format(branch.paramsOhm['r1']) +
             '{0!s:<12.12}'.format(branch.paramsOhm['x1']) + '\n')
         arquivo.write('53' + nodeFrom[2] + nodeTo[2] + '\n')
-
-        # Se for um transformador, é colocado um transformador ideal para fazer
-        #a relação de tensão entre as duas barras. A impedância da ligação já é
-        #escrita na etapa acima.
-
-        if branch.tipo == 'T':
-
-
-            arquivo.write('  TRANSFORMER' + 25*' ' + 'ATI'+
-                '{0:<3s}'.format(strNumTrf(numTrf, contTrf))+'1.E6\n')
-            arquivo.write(' '*12 + '9999' + '\n')
-            arquivo.write(' 1'+'{0:<6s}'.format(strNumTrf(numTrf, contTrf)+'TIA') + ' '*18 +
-                         '.00001.00001'+str(dbar.get_vBase(branch.nodes[0])) + '\n')
-            arquivo.write(' 2'+ dbar.get_nomeAtp(branch.nodes[1]) +'A' + ' '*18 +
-                         '.00001.00001'+str(dbar.get_vBase(branch.nodes[1]))+ '\n')
-
-            arquivo.write('  TRANSFORMER ATI'+'{0:<3s}'.format(strNumTrf(numTrf, contTrf)) +
-                        ' '*18 + '{0:<6s}'.format('BTI'+strNumTrf(numTrf, contTrf))+'\n')
-            arquivo.write(' 1'+'{0:<6s}'.format(strNumTrf(numTrf, contTrf) + 'TIB') + '\n')
-            arquivo.write(' 2'+dbar.get_nomeAtp(branch.nodes[1])+'B' + '\n')
-
-            arquivo.write('  TRANSFORMER ATI'+'{0:<3s}'.format(strNumTrf(numTrf, contTrf)) +
-                        ' '*18 + '{0:<6s}'.format('CTI'+strNumTrf(numTrf, contTrf))+'\n')
-            arquivo.write(' 1'+'{0:<6s}'.format(strNumTrf(numTrf, contTrf) + 'TIC') + '\n')
-            arquivo.write(' 2'+dbar.get_nomeAtp(branch.nodes[1])+'C' + '\n')
-
-            if numTrf > (limTrf - 1):
-                numTrf = 0
-                limTrf = 98
-                contTrf += 1
-
-            numTrf += 1
 
 def makeSource(arqPaths, dbar):
     """Escreve um arquivo-cartão /SOURCE no formato .lib com as fontes do siste-
