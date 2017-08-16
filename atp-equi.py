@@ -485,37 +485,14 @@ def makeLib(arqPaths, dlin, dbar, inner = 0):
                         strNumTrf(numTrf, contTrf)+'TIB',
                         strNumTrf(numTrf, contTrf)+'TIC']
 
-<<<<<<< HEAD
-        # Se for uma 'LT':
-        else:
-            nodeTo = [str(dbar.get_nomeAtp(branch.nodes[1]))+'A',
-                    str(dbar.get_nomeAtp(branch.nodes[1]))+'B',
-                    str(dbar.get_nomeAtp(branch.nodes[1]))+'C']
-
-        # A seguir, é feita a escrita dos dados do circuito no arquivo-cartão.
-
-        arquivo.write('51{}{:6}'.format(nodeFrom[0],nodeTo[0]) + 12*' ' +
-            '{0!s:<6.6}'.format(branch.paramsOhm['r0']) +
-            '{0!s:<12.12}'.format(branch.paramsOhm['x0']) + '\n')
-        arquivo.write('52{}{:6}'.format(nodeFrom[1],nodeTo[1]) + 12*' ' +
-            '{0!s:<6.6}'.format(branch.paramsOhm['r1']) +
-            '{0!s:<12.12}'.format(branch.paramsOhm['x1']) + '\n')
-        arquivo.write('53' + nodeFrom[2] + nodeTo[2] + '\n')
-
-        # Se for um transformador, é colocado um transformador ideal para fazer
-        #a relação de tensão entre as duas barras. A impedância da ligação já é
-        #escrita na etapa acima.
-
-        if branch.tipo == 'T':
-
-=======
             nodeToSec = [strNumTrf(numTrf, contTrf)+'ITA',
                        strNumTrf(numTrf, contTrf)+'ITB',
                        strNumTrf(numTrf, contTrf)+'ITC']
 
             # Se for um transformador, é colocado um transformador ideal para fazer
-            #a relação de tensão entre as duas barras. A impedância está sendo divida
-            # entre o primário e o secundário
+            # a relação de tensão entre as duas barras. A impedância está sendo divida
+            # entre o primário e o secundário para diminuir a probabilidade de problemas
+            # numéricos
             paramsOhmSec = branch.paramsOhm.copy()
             for key,val in branch.paramsOhm.items():
                 branch.paramsOhm[key] = 0.5*val
@@ -529,7 +506,6 @@ def makeLib(arqPaths, dlin, dbar, inner = 0):
                 textos.num2string(paramsOhmSec['r1'],6) +
                 textos.num2string(paramsOhmSec['x1'],12) + '\n')
             arquivo.write('53' + dbar.get_nomeAtp(branch.nodes[1]) +'C' + nodeToSec[2] + '\n')
->>>>>>> patch5
 
             arquivo.write('  TRANSFORMER' + 25*' ' + 'ATI'+
                 '{0:<3s}'.format(strNumTrf(numTrf, contTrf))+'1.E6\n')
