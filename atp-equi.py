@@ -497,10 +497,10 @@ def makeLib(arqPaths, dlin, dbar, inner = 0):
         # A seguir, é feita a escrita dos dados do circuito no arquivo-cartão.
 
         arquivo.write('51{}{:6}'.format(nodeFrom[0],nodeTo[0]) + 12*' ' +
-            '{0!s:<6.6}'.format(branch.paramsOhm['r0']) + 6*' ' +
+            '{0!s:<6.6}'.format(branch.paramsOhm['r0']) +
             '{0!s:<12.12}'.format(branch.paramsOhm['x0']) + '\n')
         arquivo.write('52{}{:6}'.format(nodeFrom[1],nodeTo[1]) + 12*' ' +
-            '{0!s:<6.6}'.format(branch.paramsOhm['r1']) + 6*' ' +
+            '{0!s:<6.6}'.format(branch.paramsOhm['r1']) +
             '{0!s:<12.12}'.format(branch.paramsOhm['x1']) + '\n')
         arquivo.write('53' + nodeFrom[2] + nodeTo[2] + '\n')
 
