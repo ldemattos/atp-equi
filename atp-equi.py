@@ -170,8 +170,7 @@ class Branches:
 
         # Calcula os valores em Ohm
         for n in branch.paramsOhm:
-            branch.paramsOhm[n] = specialFloat(branch.params[n] *
-                dbar.get_vBase(branch.nodes[0])**2./10000)
+            branch.paramsOhm[n] = branch.params[n] * dbar.get_vBase(branch.nodes[0])**2./10000
 
     def get_equiNodes(self, inner = 0):
         barrasEquiv = set()
@@ -250,34 +249,6 @@ class branch:
             if (self.nodes[1] == 0) and (self.params['r1'] != 9999.99):
                 self.tipo = 'G'
             else: self.tipo = linha[16]
-
-
-class specialFloat(float):
-    """Classe herdada de float para poder mudar o comportamento do metodo
-     __str__, que controla como eh feita a conversao do float para string"""
-    def __str__ (self):
-
-        valor = self.__float__()
-
-        if valor > 0:
-            if log10(valor) < -4:
-                temp = round(valor * 10 ** -floor(log10(valor)))
-                return str(temp) + '.e' + str(floor(log10(valor)))
-
-            elif log10(valor) >= 6:
-                temp = round(valor * 10 ** -floor(log10(valor)),1)
-                return str(temp) + 'e' + str(floor(log10(valor)))
-
-
-            else: return str(valor)
-
-        elif valor == 0:
-            return '0.0'
-
-        else:
-            if log10(abs(valor)) < -4: return '0.0'
-            else: return str(valor)
-
 
 # FUNÇÕES ---------------------------------------------------------------------#
 
