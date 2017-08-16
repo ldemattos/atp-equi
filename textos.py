@@ -85,3 +85,20 @@ def traduzArgParse(Text):
     Text = Text.replace("optional arguments","argumentos opcionais")
 
     return(Text)
+
+# formata corretamente os números dependendo do seu tamanho
+# e da quantidade de casas disponíveis
+def num2string(num,places):
+
+    nref = ''
+    for i in range(places-1):
+        nref = nref+'9'
+
+    if num < abs(int(nref)):
+        texto = ('{0!s:<' + str(places) + '.' + str(places)+'}').format(num)
+
+    else:
+        texto = ('{:'+'1.' + str(places-5)+'E}').format(num)
+        texto = texto.split('E')[0] + 'E' + texto.split('E')[1].replace('0','')
+
+    return(texto)

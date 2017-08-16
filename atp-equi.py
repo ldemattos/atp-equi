@@ -499,11 +499,11 @@ def makeLib(arqPaths, dlin, dbar, inner = 0):
 
             # Colocar metade do equivalente de transferência no secundário
             arquivo.write('51{}{:6}'.format(dbar.get_nomeAtp(branch.nodes[1]) +'A',nodeToSec[0]) + 12*' ' +
-                '{0!s:<6.6}'.format(paramsOhmSec['r0']) +
-                '{0!s:<12.12}'.format(paramsOhmSec['x0']) + '\n')
+                textos.num2string(paramsOhmSec['r0'],6) +
+                textos.num2string(paramsOhmSec['x0'],12) + '\n')
             arquivo.write('52{}{:6}'.format(dbar.get_nomeAtp(branch.nodes[1]) +'B',nodeToSec[1]) + 12*' ' +
-                '{0!s:<6.6}'.format(paramsOhmSec['r1']) +
-                '{0!s:<12.12}'.format(paramsOhmSec['x1']) + '\n')
+                textos.num2string(paramsOhmSec['r1'],6) +
+                textos.num2string(paramsOhmSec['x1'],12) + '\n')
             arquivo.write('53' + dbar.get_nomeAtp(branch.nodes[1]) +'C' + nodeToSec[2] + '\n')
 
             arquivo.write('  TRANSFORMER' + 25*' ' + 'ATI'+
@@ -539,11 +539,11 @@ def makeLib(arqPaths, dlin, dbar, inner = 0):
 
         # A seguir, é feita a escrita dos dados do circuito no arquivo-cartão.
         arquivo.write('51{}{:6}'.format(nodeFrom[0],nodeTo[0]) + 12*' ' +
-            '{0!s:<6.6}'.format(branch.paramsOhm['r0']) +
-            '{0!s:<12.12}'.format(branch.paramsOhm['x0']) + '\n')
+            textos.num2string(branch.paramsOhm['r0'],6) +
+            textos.num2string(branch.paramsOhm['x0'],12) + '\n')
         arquivo.write('52{}{:6}'.format(nodeFrom[1],nodeTo[1]) + 12*' ' +
-            '{0!s:<6.6}'.format(branch.paramsOhm['r1']) +
-            '{0!s:<12.12}'.format(branch.paramsOhm['x1']) + '\n')
+            textos.num2string(branch.paramsOhm['r1'],6) +
+            textos.num2string(branch.paramsOhm['x1'],12) + '\n')
         arquivo.write('53' + nodeFrom[2] + nodeTo[2] + '\n')
 
 def makeSource(arqPaths, dbar):
