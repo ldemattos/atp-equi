@@ -539,9 +539,7 @@ def makeLib(arqPaths, dlin, dbar, ignRneg, inner = 0):
                     contTrf += 1
 
                 numTrf += 1
-
-        else:
-            continue
+    
 
 def makeSource(arqPaths, dbar):
     """Escreve um arquivo-cartão /SOURCE no formato .lib com as fontes do siste-
